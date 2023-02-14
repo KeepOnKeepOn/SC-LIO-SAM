@@ -1,58 +1,52 @@
 lio_sam:
 
   # Topics
-  pointCloudTopic: "/os1_points"               # Point cloud data
-  imuTopic: "/imu/data_raw"                         # IMU data
+  pointCloudTopic: "/velodyne_points"               # Point cloud data
+  imuTopic: "/imu/data"                         # IMU data
   odomTopic: "odometry/imu"                   # IMU pre-preintegration odometry, same frequency as IMU
   gpsTopic: "odometry/gpsz"                   # GPS odometry topic from navsat, see module_navsat.launch file
 
   # Frames
-  lidarFrame: "base_link"
+  lidarFrame: "velodyne"
   baselinkFrame: "base_link"
   odometryFrame: "odom"
   mapFrame: "map"
 
   # GPS Settings
-  useImuHeadingInitialization: true           # if using GPS data, set to "true"
+  useImuHeadingInitialization: false           # if using GPS data, set to "true"
   useGpsElevation: false                      # if GPS elevation is bad, set to "false"
   gpsCovThreshold: 2.0                        # m^2, threshold for using GPS data
   poseCovThreshold: 25.0                      # m^2, threshold for using GPS data
   
   # Export settings
-  savePCD: true                              # https://github.com/TixiaoShan/LIO-SAM/issues/3
-  savePCDDirectory: "/home/user/Desktop/scliosam/data/"  # use global path, and end with "/" 
+  savePCD: false                              # https://github.com/TixiaoShan/LIO-SAM/issues/3
+  savePCDDirectory: "/home/long/Code/rosbag/lio-sam/"  # use global path, and end with "/" 
     # warning: if you have already data in the above savePCDDirectory, it will all remove and remake them. Thus, backup is recommended if pre-made data exist. 
 
   # Sensor Settings
-  sensor: mulran                            # lidar sensor type, either 'velodyne' or 'ouster'
-  N_SCAN: 64                               # number of lidar channel (i.e., 16, 32, 64, 128)
-  Horizon_SCAN: 1024                          # lidar horizontal resolution (Velodyne:1800, Ouster:512,1024,2048)
+  sensor: velodyne                            # lidar sensor type, either 'velodyne' or 'ouster'
+  N_SCAN: 16                               # number of lidar channel (i.e., 16, 32, 64, 128)
+  Horizon_SCAN: 1800                          # lidar horizontal resolution (Velodyne:1800, Ouster:512,1024,2048)
   downsampleRate: 1                           # default: 1. Downsample your data if too many points. i.e., 16 = 64 / 4, 16 = 16 / 1
   lidarMinRange: 1.0                          # default: 1.0, minimum lidar range to be used
-  lidarMaxRange: 1000.0                       # default: 1000.0, maximum lidar range to be used
+  lidarMaxRange: 250.0                       # default: 1000.0, maximum lidar range to be used
 
   # IMU Settings
   imuAccNoise: 0.009939570888238808e-03
   imuGyrNoise: 0.005636343949698187e-03
   imuAccBiasN: 0.64356659353532566e-03
   imuGyrBiasN: 0.35640318696367613e-03
-  imuGravity: 9.80511
+  imuGravity: 9.789391783792494
   imuRPYWeight: 0.01
 
-  # Extrinsics (lidar -> IMU, of MulRan dataset)
-  extrinsicTrans: [1.77, -0.00, -0.05]
-  extrinsicRot: [-1, 0, 0,
-                  0, -1, 0,
+  # Extrinsics (IMU -> lidar)
+  extrinsicTrans: [0,0,-0.2]
+  extrinsicRot: [1, 0, 0,
+                  0, 1, 0,
                   0, 0, 1]
-  extrinsicRPY: [-1,  0, 0,
-                 0, -1, 0,
+  extrinsicRPY: [1, 0, 0,
+                  0, 1, 0,
                   0, 0, 1]
-  # extrinsicRot: [1, 0, 0,
-  #                 0, 1, 0,
-  #                 0, 0, 1]
-  # extrinsicRPY: [1, 0, 0,
-  #                 0, 1, 0,
-  #                 0, 0, 1]
 
   # LOAM feature threshold
   edgeThreshold: 1.0
@@ -66,11 +60,11 @@ lio_sam:
   mappingSurfLeafSize: 0.4                      # default: 0.4 - outdoor, 0.2 - indoor
 
   # robot motion constraint (in case you are using a 2D robot)
-  z_tollerance: 1000                            # meters
+  z_tollerance: 10                            # meters
   rotation_tollerance: 1000                     # radians
 
   # CPU Params
-  numberOfCores: 4                              # number of cores for mapping optimization
+  numberOfCores: 8                              # number of cores for mapping optimization
   mappingProcessInterval: 0.15                  # seconds, regulate mapping frequency
 
   # Surrounding map

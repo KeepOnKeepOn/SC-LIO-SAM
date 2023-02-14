@@ -80,6 +80,7 @@ private:
     Eigen::Affine3f transStartInverse;
 
     pcl::PointCloud<PointXYZIRT>::Ptr laserCloudIn;
+    pcl::PointCloud<PointXYZIRT>::Ptr tmpVelodyneCloudIn;
     pcl::PointCloud<OusterPointXYZIRT>::Ptr tmpOusterCloudIn;
     pcl::PointCloud<MulranPointXYZIRT>::Ptr tmpMulranCloudIn;
     pcl::PointCloud<PointType>::Ptr   fullCloud;
@@ -119,6 +120,7 @@ public:
     void allocateMemory()
     {
         laserCloudIn.reset(new pcl::PointCloud<PointXYZIRT>());
+        tmpVelodyneCloudIn.reset(new pcl::PointCloud<PointXYZIRT>());
         tmpOusterCloudIn.reset(new pcl::PointCloud<OusterPointXYZIRT>());
         tmpMulranCloudIn.reset(new pcl::PointCloud<MulranPointXYZIRT>());
         fullCloud.reset(new pcl::PointCloud<PointType>());
@@ -222,42 +224,60 @@ public:
 
         if (sensor == SensorType::VELODYNE)
         {
-            pcl::moveFromROSMsg(currentCloudMsg, *laserCloudIn);
+						pcl::moveFromROSMsg(currentCloudMsg, *tmpVelodyneCloudIn);
+						for (size_t i = 0; i < tmpVelodyneCloudIn->size(); i++)
+            {
+                auto &src = tmpVelodyneCloudIn->points[i];
+                PointXYZIRT dst;
+								if(std::isnan(src.x)||std::isnan(src.y)||std::isnan(src.z))
+									continue;
+                dst.x = src.x;
+                dst.y = src.y;
+                dst.z = src.z;
+                dst.intensity = src.intensity;
+                dst.ring = src.ring;
+                dst.time = src.time;
+								laserCloudIn->push_back(dst);
+            }
         }
         else if (sensor == SensorType::OUSTER)
         {
             // Convert to Velodyne format
             pcl::moveFromROSMsg(currentCloudMsg, *tmpOusterCloudIn);
-            laserCloudIn->points.resize(tmpOusterCloudIn->size());
-            laserCloudIn->is_dense = tmpOusterCloudIn->is_dense;
+            laserCloudIn->is_dense = true;
             for (size_t i = 0; i < tmpOusterCloudIn->size(); i++)
             {
                 auto &src = tmpOusterCloudIn->points[i];
-                auto &dst = laserCloudIn->points[i];
+                PointXYZIRT dst;
+								if(std::isnan(src.x)||std::isnan(src.y)||std::isnan(src.z))
+									continue;
                 dst.x = src.x;
                 dst.y = src.y;
                 dst.z = src.z;
                 dst.intensity = src.intensity;
                 dst.ring = src.ring;
                 dst.time = src.t * 1e-9f;
+								laserCloudIn->push_back(dst);
             }
         }
         else if (sensor == SensorType::MULRAN)
         {
             // Convert to Velodyne format
             pcl::moveFromROSMsg(currentCloudMsg, *tmpMulranCloudIn);
-            laserCloudIn->points.resize(tmpMulranCloudIn->size());
-            laserCloudIn->is_dense = tmpMulranCloudIn->is_dense;
+            laserCloudIn->is_dense = true;
             for (size_t i = 0; i < tmpMulranCloudIn->size(); i++)
             {
                 auto &src = tmpMulranCloudIn->points[i];
-                auto &dst = laserCloudIn->points[i];
+                PointXYZIRT dst;
+								if(std::isnan(src.x)||std::isnan(src.y)||std::isnan(src.z))
+									continue;
                 dst.x = src.x;
                 dst.y = src.y;
                 dst.z = src.z;
                 dst.intensity = src.intensity;
                 dst.ring = src.ring;
                 dst.time = float(src.t);
+								laserCloudIn->push_back(dst);
             }
         }
         else
