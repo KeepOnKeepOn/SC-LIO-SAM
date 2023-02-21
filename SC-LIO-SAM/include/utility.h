@@ -1,5 +1,4 @@
 #pragma once
-
 #include <ros/ros.h>
 
 #include <std_msgs/Header.h>
@@ -60,7 +59,7 @@ typedef std::numeric_limits< double > dbl;
 
 typedef pcl::PointXYZI PointType;
 
-enum class SensorType { MULRAN, VELODYNE, OUSTER };
+enum class SensorType { MULRAN, VELODYNE, OUSTER, LIVOX };
 
 class ParamServer
 {
@@ -189,6 +188,10 @@ public:
         {
             sensor = SensorType::MULRAN;
         }
+				else if (sensorStr == "livox")
+        {
+            sensor = SensorType::LIVOX;
+        }
         else
         {
             ROS_ERROR_STREAM(
@@ -250,7 +253,7 @@ public:
 
         usleep(100);
     }
-
+		//transform imu data from imu frame to lidar frame
     sensor_msgs::Imu imuConverter(const sensor_msgs::Imu& imu_in)
     {
         sensor_msgs::Imu imu_out = imu_in;
